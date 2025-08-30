@@ -1,293 +1,548 @@
 // src/components/MovieDetailPage.tsx
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
-    Box,
-    Container,
-    Typography,
-    Stack,
-    Chip,
-    Button,
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Chip,
+  Button,
+  IconButton,
+  Card,
+  CardContent,
+  alpha,
+  useTheme,
+  Skeleton
 } from '@mui/material';
 import {
-    Star,
-    CalendarToday,
-    AccessTime,
-    Language,
-    Group,
-    Movie as MovieIcon,
+  Star,
+  CalendarToday,
+  AccessTime,
+  Language,
+  Group,
+  Movie as MovieIcon,
+  ArrowBack,
+  PlayArrow,
+  Theaters
 } from '@mui/icons-material';
 import { moviesApi } from '../../services/api/movies';
 import type { Movie, MovieDetails, Cast, Crew } from '../../types/movie';
-import { useGlobal } from '../../context/GlobalContext'; // Importe o hook useGlobal
+import { useGlobal } from '../../context/GlobalContext';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import MovieTorrentDownload from '../MovieTorrentDownload';
 
 interface RecommendedMovies {
-    results: Movie[];
+  results: Movie[];
 }
 
 const MovieDetailPage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const [movie, setMovie] = useState<MovieDetails | null>(null);
-    const [credits, setCredits] = useState<{ cast: Cast[], crew: Crew[] } | null>(null);
-    const [recommended, setRecommended] = useState<RecommendedMovies | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const { setIsLoading } = useGlobal(); // Chame o hook useGlobal para pegar a função setIsLoading
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const [movie, setMovie] = useState<MovieDetails | null>(null);
+  const [credits, setCredits] = useState<{ cast: Cast[], crew: Crew[] } | null>(null);
+  const [recommended, setRecommended] = useState<RecommendedMovies | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { isLoading, setIsLoading } = useGlobal();
 
-    useEffect(() => {
-        const fetchMovieData = async () => {
-            if (!id) return;
-
-            setIsLoading(true); // Ativa o loading antes de iniciar a requisição
-            setError(null);
-
-            try {
-                const [detailsRes, recommendationsRes] = await Promise.all([
-                    moviesApi.getDetails(Number(id)),
-                    moviesApi.getRecommendations(Number(id))
-                ]);
-                
-                setMovie(detailsRes.data);
-                setCredits(detailsRes.data.credits); 
-                setRecommended(recommendationsRes.data);
-
-            } catch (err) {
-                console.error("Erro ao carregar os dados do filme:", err);
-                setError('Não foi possível carregar os detalhes do filme.');
-            } finally {
-                setIsLoading(false); // Desativa o loading ao final da requisição (com sucesso ou com erro)
-            }
-        };
-
-        fetchMovieData();
-    }, [id, setIsLoading]);
-
-    // O seu componente Loading já é gerenciado pelo GlobalProvider,
-    // então você pode remover a lógica de renderização condicional
-    // que estava dentro deste componente.
-
-    if (error || !movie) {
-        return (
-            <Box sx={{ textAlign: 'center', p: 4, color: '#B0B0B0', background: '#0F0F0F' }}>
-                <Typography variant="h5" color="error">{error || 'Filme não encontrado.'}</Typography>
-            </Box>
-        );
+  const fetchMovieData = useCallback(async (movieId: string | number) => {
+    if (!movieId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [detailsRes, recommendationsRes] = await Promise.all([
+        moviesApi.getDetails(Number(movieId)),
+        moviesApi.getRecommendations(Number(movieId))
+      ]);
+      setMovie(detailsRes.data);
+      setCredits(detailsRes.data.credits);
+      setRecommended(recommendationsRes.data);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error("Erro ao carregar os dados do filme:", err);
+      setError('Não foi possível carregar os detalhes do filme.');
+    } finally {
+      setIsLoading(false);
     }
-    
-    // O componente de Loading será renderizado pelo GlobalProvider.
-    // Portanto, você não precisa mais do "if (loading)" no topo do componente.
-    // Agora, a renderização só acontece quando os dados estão disponíveis.
-    
-    const backdropUrl = movie.backdrop_path
-        ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
-        : 'https://via.placeholder.com/1920x1080/1E1E1E/FFD700?text=No+Backdrop+Image';
-        
-    const posterUrl = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-        : 'https://via.placeholder.com/300x450/1E1E1E/FFD700?text=No+Image';
+  }, [setIsLoading]);
 
-    // Componente auxiliar para Card de Pessoa
-    const PersonCard = ({ person }: { person: Cast | Crew }) => {
-        const profileUrl = person.profile_path
-            ? `https://image.tmdb.org/t/p/w200${person.profile_path}`
-            : 'https://via.placeholder.com/200x300/1E1E1E/B0B0B0?text=Sem+Foto';
-            
-        return (
-            <Box sx={{ textAlign: 'center', p: 1, '&:hover': { transform: 'scale(1.05)', transition: 'transform 0.2s' } }}>
-                <Box
-                    component="img"
-                    src={profileUrl}
-                    alt={person.name}
-                    sx={{ width: '100%', height: 'auto', borderRadius: '8px', objectFit: 'cover' }}
-                />
-                <Typography variant="body2" sx={{ mt: 1, fontWeight: 600, color: '#FFF' }}>
-                    {person.name}
-                </Typography>
-                {('character' in person) && (
-                    <Typography variant="caption" sx={{ color: '#B0B0B0' }}>
-                        {person.character}
-                    </Typography>
-                )}
-                {('job' in person) && (
-                    <Typography variant="caption" sx={{ color: '#B0B0B0' }}>
-                        {person.job}
-                    </Typography>
-                )}
-            </Box>
-        );
-    };
-    
-    // Componente auxiliar para Card de Filme
-    const MovieRecommendationCard = ({ movie }: { movie: Movie }) => {
-        const recommendationPosterUrl = movie.poster_path
-            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-            : 'https://via.placeholder.com/300x450/1E1E1E/FFD700?text=Sem+Imagem';
-            
-        return (
-            <Box sx={{ textAlign: 'center', cursor: 'pointer', '&:hover img': { transform: 'scale(1.05)', transition: 'transform 0.3s' } }}>
-                <Box
-                    component="img"
-                    src={recommendationPosterUrl}
-                    alt={movie.title}
-                    sx={{ width: '100%', height: 'auto', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}
-                />
-                <Typography variant="body2" sx={{ mt: 1, fontWeight: 600, color: '#FFF' }}>
-                    {movie.title}
-                </Typography>
-            </Box>
-        );
-    };
+  useEffect(() => {
+    if (id) {
+      fetchMovieData(id);
+    }
+  }, [id, fetchMovieData]);
 
+  const handleCardClick = (movieId: number) => {
+    navigate(`/movie/${movieId}`);
+  };
+
+  if (error) {
     return (
-        <Box sx={{ background: '#0F0F0F', color: '#FFFFFF', minHeight: '100vh' }}>
-            {/* Banner/Backdrop Section */}
-            <Box
-                sx={{
-                    position: 'relative',
-                    height: { xs: 'auto', md: '600px' },
-                    overflow: 'hidden',
-                    pt: { xs: 8, md: 0 },
-                    pb: { xs: 8, md: 0 },
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundImage: `url(${backdropUrl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        filter: 'blur(5px) brightness(0.5)',
-                        transform: 'scale(1.1)',
-                    },
-                }}
-            >
-                <Container maxWidth="lg" sx={{ zIndex: 1, position: 'relative' }}>
-                    <Stack
-                        direction={{ xs: 'column', md: 'row' }}
-                        spacing={4}
-                        alignItems={{ xs: 'center', md: 'flex-start' }}
-                        sx={{ textAlign: { xs: 'center', md: 'left' } }}
-                    >
-                        {/* Poster Section */}
-                        <Box
-                            sx={{
-                                width: { xs: '80%', sm: '60%', md: '40%' },
-                                maxWidth: '400px',
-                                flexShrink: 0,
-                            }}
-                        >
-                            <Box
-                                component="img"
-                                src={posterUrl}
-                                alt={movie.title}
-                                sx={{
-                                    width: '100%',
-                                    height: 'auto',
-                                    borderRadius: 2,
-                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
-                                    border: '2px solid rgba(255, 215, 0, 0.3)',
-                                    display: 'block',
-                                }}
-                            />
-                        </Box>
+      <Box sx={{ textAlign: 'center', p: 4, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h5" color="error">{error}</Typography>
+        </Box>
+        <Footer />
+      </Box>
+    );
+  }
 
-                        {/* Movie Info Section */}
-                        <Box sx={{ color: '#E0E0E0', width: { xs: '100%', md: '60%' } }}>
-                            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
-                                <Typography variant="h2" component="h1" sx={{ fontWeight: 800, color: '#FFD700', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-                                    {movie.title}
-                                </Typography>
-                                <Chip
-                                    icon={<Star />}
-                                    label={movie.vote_average.toFixed(1)}
-                                    sx={{ backgroundColor: 'rgba(255, 215, 0, 0.2)', color: '#FFD700', fontWeight: 600, fontSize: '1rem' }}
-                                />
-                            </Stack>
-                            <Typography variant="h5" sx={{ mb: 2, fontStyle: 'italic', color: '#B0B0B0' }}>
-                                {movie.tagline}
-                            </Typography>
-                            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', mb: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
-                                {movie.release_date && <Chip icon={<CalendarToday />} label={`Lançamento: ${movie.release_date.slice(0, 4)}`} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#FFFFFF' }} />}
-                                {movie.runtime && <Chip icon={<AccessTime />} label={`Duração: ${movie.runtime} min`} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#FFFFFF' }} />}
-                                {movie.original_language && <Chip icon={<Language />} label={`Idioma: ${movie.original_language.toUpperCase()}`} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#FFFFFF' }} />}
-                            </Stack>
-                            <Typography variant="body1" sx={{ mt: 4, mb: 4, lineHeight: 1.8, color: '#FFFFFF' }}>
-                                {movie.overview}
-                            </Typography>
-                            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
-                                {movie.genres?.map(genre => (
-                                    <Chip
-                                        key={genre.id}
-                                        label={genre.name}
-                                        sx={{
-                                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                                            color: '#FFD700',
-                                            fontWeight: 500,
-                                        }}
-                                    />
-                                ))}
-                            </Stack>
-                            <Button
-                                variant="contained"
-                                sx={{
-                                    mt: 3,
-                                    background: 'linear-gradient(45deg, #FFD700 30%, #FFC400 90%)',
-                                    color: '#111',
-                                    fontWeight: 700,
-                                    transition: 'transform 0.2s ease-in-out',
-                                    '&:hover': {
-                                        transform: 'scale(1.05)',
-                                        boxShadow: '0 5px 15px rgba(255, 215, 0, 0.4)',
-                                    }
-                                }}
-                            >
-                                Assistir Trailer
-                            </Button>
-                        </Box>
-                    </Stack>
-                </Container>
+  if (isLoading && !movie) {
+    return (
+      <Box sx={{ background: theme.palette.background.default, minHeight: '100vh' }}>
+        <Navbar />
+        <Container maxWidth="lg" sx={{ pt: 4 }}>
+          <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 2, mb: 4 }} />
+          <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
+            <Skeleton variant="rectangular" width={300} height={450} sx={{ borderRadius: 2 }} />
+            <Box sx={{ flexGrow: 1 }}>
+              <Skeleton variant="text" height={80} sx={{ mb: 2 }} />
+              <Skeleton variant="text" height={40} sx={{ mb: 4 }} />
+              <Skeleton variant="text" height={25} sx={{ mb: 1 }} />
+              <Skeleton variant="text" height={25} sx={{ mb: 1 }} />
+              <Skeleton variant="text" height={25} sx={{ mb: 1 }} />
+              <Skeleton variant="text" height={25} sx={{ mb: 4 }} />
+              <Skeleton variant="rectangular" width={200} height={50} sx={{ borderRadius: 2 }} />
+            </Box>
+          </Box>
+        </Container>
+        <Footer />
+      </Box>
+    );
+  }
+
+  if (!movie) {
+    return null;
+  }
+  
+  const backdropUrl = movie.backdrop_path
+    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+    : 'https://via.placeholder.com/1920x1080/1E1E1E/FFD700?text=No+Backdrop+Image';
+    
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : 'https://via.placeholder.com/300x450/1E1E1E/FFD700?text=No+Image';
+
+  const PersonCard = ({ person }: { person: Cast | Crew }) => {
+    const profileUrl = person.profile_path
+      ? `https://image.tmdb.org/t/p/w200${person.profile_path}`
+      : 'https://via.placeholder.com/200x300/1E1E1E/B0B0B0?text=Sem+Foto';
+      
+    return (
+      <Card 
+        sx={{ 
+          height: '100%',
+          background: theme.palette.background.paper,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-8px)',
+            boxShadow: `0 12px 28px ${alpha(theme.palette.primary.main, 0.2)}`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          }
+        }}
+      >
+        <Box
+          component="img"
+          src={profileUrl}
+          alt={person.name}
+          sx={{ 
+            width: '100%', 
+            height: 240, 
+            objectFit: 'cover',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px'
+          }}
+        />
+        <CardContent sx={{ p: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary, mb: 0.5 }}>
+            {person.name}
+          </Typography>
+          {('character' in person) && (
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, lineHeight: 1.2 }}>
+              {person.character}
+            </Typography>
+          )}
+          {('job' in person) && (
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, lineHeight: 1.2 }}>
+              {person.job}
+            </Typography>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+  
+  const MovieRecommendationCard = ({ movie }: { movie: Movie }) => {
+    const recommendationPosterUrl = movie.poster_path
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+      : 'https://via.placeholder.com/300x450/1E1E1E/FFD700?text=Sem+Imagem';
+      
+    return (
+      <Card 
+        onClick={() => handleCardClick(movie.id)}
+        sx={{ 
+          width: { xs: 160, sm: 180, md: 200 },
+          flexShrink: 0,
+          background: theme.palette.background.paper,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-8px)',
+            boxShadow: `0 12px 28px ${alpha(theme.palette.primary.main, 0.2)}`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+          }
+        }}
+      >
+        <Box
+          component="img"
+          src={recommendationPosterUrl}
+          alt={movie.title}
+          sx={{ 
+            width: '100%', 
+            height: 260, 
+            objectFit: 'cover',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px'
+          }}
+        />
+        <CardContent sx={{ p: 1.5 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontWeight: 600, 
+              color: theme.palette.text.primary,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: 1.3
+            }}
+          >
+            {movie.title}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <Box sx={{ background: theme.palette.background.default, minHeight: '100vh' }}>
+      <Navbar />
+      
+      {/* Hero Section with Backdrop */}
+      <Box
+        sx={{
+          position: 'relative',
+          minHeight: { xs: 'auto', md: '70vh' },
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: `linear-gradient(to bottom, ${alpha(theme.palette.background.default, 0.2)} 0%, ${theme.palette.background.default} 90%), url(${backdropUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(4px)',
+            transform: 'scale(1.05)',
+          },
+        }}
+      >
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: 8 }}>
+          <IconButton
+            onClick={() => navigate(-1)}
+            sx={{
+              position: 'absolute',
+              top: { xs: 16, md: 32 },
+              left: { xs: 16, md: 32 },
+              color: theme.palette.primary.main,
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: 'blur(10px)',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              },
+            }}
+          >
+            <ArrowBack />
+          </IconButton>
+          
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: { xs: 'center', md: 'flex-start' },
+              gap: 4,
+              textAlign: { xs: 'center', md: 'left' }
+            }}
+          >
+            {/* Movie Poster */}
+            <Box
+              sx={{
+                width: { xs: '70%', sm: '50%', md: '35%' },
+                maxWidth: 400,
+                flexShrink: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                position: 'relative',
+                '&:hover .play-overlay': {
+                  opacity: 1,
+                }
+              }}
+            >
+              <Box
+                component="img"
+                src={posterUrl}
+                alt={movie.title}
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: 3,
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                }}
+              />
+              <Box
+                className="play-overlay"
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: alpha(theme.palette.background.default, 0.7),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 3,
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease',
+                  cursor: 'pointer'
+                }}
+              >
+                <PlayArrow sx={{ fontSize: 60, color: theme.palette.primary.main }} />
+              </Box>
             </Box>
 
-            {/* Seções Adicionais (Elenco e Recomendações) */}
-            <Container maxWidth="lg" sx={{ pt: 8, pb: 8 }}>
-                {/* Seção de Elenco Principal */}
-                {credits && credits.cast.length > 0 && (
-                    <Box sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h2" sx={{ fontWeight: 700, mb: 3, borderLeft: '4px solid #FFD700', pl: 2, display: 'flex', alignItems: 'center' }}>
-                            <Group sx={{ mr: 1 }} /> Elenco Principal
-                        </Typography>
-                        <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', py: 1 }}>
-                            {credits.cast.slice(0, 10).map((person) => (
-                                <Box key={person.id} sx={{ flexShrink: 0, width: { xs: '35%', sm: '25%', md: '15%' } }}>
-                                    <PersonCard person={person} />
-                                </Box>
-                            ))}
-                        </Stack>
-                    </Box>
+            {/* Movie Details */}
+            <Box sx={{ color: theme.palette.text.primary, width: { xs: '100%', md: '65%' } }}>
+              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2, justifyContent: { xs: 'center', md: 'flex-start' }, flexWrap: 'wrap' }}>
+                <Typography 
+                  variant="h2" 
+                  component="h1" 
+                  sx={{ 
+                    fontWeight: 800, 
+                    color: theme.palette.primary.main,
+                    fontSize: { xs: '2.2rem', sm: '2.8rem', md: '3.2rem' },
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  {movie.title}
+                </Typography>
+                <Chip
+                  icon={<Star sx={{ color: theme.palette.primary.main }} />}
+                  label={movie.vote_average.toFixed(1)}
+                  sx={{ 
+                    backgroundColor: alpha(theme.palette.primary.main, 0.15), 
+                    color: theme.palette.primary.main, 
+                    fontWeight: 700, 
+                    fontSize: '1rem',
+                    height: 36
+                  }}
+                />
+              </Stack>
+              
+              {movie.tagline && (
+                <Typography variant="h6" sx={{ mb: 3, fontStyle: 'italic', color: theme.palette.text.secondary }}>
+                  {movie.tagline}
+                </Typography>
+              )}
+              
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, mb: 3, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                {movie.release_date && (
+                  <Chip 
+                    icon={<CalendarToday sx={{ color: theme.palette.text.secondary }} />} 
+                    label={`${new Date(movie.release_date).getFullYear()}`} 
+                    sx={{ 
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.2), 
+                      color: theme.palette.text.primary 
+                    }} 
+                  />
                 )}
+                {movie.runtime && (
+                  <Chip 
+                    icon={<AccessTime sx={{ color: theme.palette.text.secondary }} />} 
+                    label={`${movie.runtime} min`} 
+                    sx={{ 
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.2), 
+                      color: theme.palette.text.primary 
+                    }} 
+                  />
+                )}
+                {movie.original_language && (
+                  <Chip 
+                    icon={<Language sx={{ color: theme.palette.text.secondary }} />} 
+                    label={movie.original_language.toUpperCase()} 
+                    sx={{ 
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.2), 
+                      color: theme.palette.text.primary 
+                    }} 
+                  />
+                )}
+              </Stack>
+              
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, mb: 4, justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                {movie.genres?.map(genre => (
+                  <Chip
+                    key={genre.id}
+                    label={genre.name}
+                    sx={{ 
+                      backgroundColor: alpha(theme.palette.primary.main, 0.15), 
+                      color: theme.palette.primary.main, 
+                      fontWeight: 500 
+                    }}
+                  />
+                ))}
+              </Stack>
+              
+              <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.8, color: theme.palette.text.primary }}>
+                {movie.overview}
+              </Typography>
+              
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                <Button
+                  variant="contained"
+                  startIcon={<Theaters />}
+                  sx={{
+                    py: 1.5,
+                    px: 3,
+                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    color: theme.palette.primary.contrastText,
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    '&:hover': {
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                      transform: 'translateY(-2px)',
+                    }
+                  }}
+                >
+                  Assistir Trailer
+                </Button>
+                
+                <MovieTorrentDownload movieTitle={movie.title} />
+              </Stack>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
 
-                {/* Seção de Filmes Recomendados */}
-                {recommended && recommended.results.length > 0 && (
-                    <Box>
-                        <Typography variant="h4" component="h2" sx={{ fontWeight: 700, mb: 3, borderLeft: '4px solid #FFD700', pl: 2, display: 'flex', alignItems: 'center' }}>
-                            <MovieIcon sx={{ mr: 1 }} /> Filmes Recomendados
-                        </Typography>
-                        <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', py: 1 }}>
-                            {recommended.results.slice(0, 10).map((recMovie) => (
-                                <Box key={recMovie.id} sx={{ flexShrink: 0, width: { xs: '35%', sm: '25%', md: '15%' } }}>
-                                    <MovieRecommendationCard movie={recMovie} />
-                                </Box>
-                            ))}
-                        </Stack>
-                    </Box>
-                )}
-            </Container>
-        </Box>
-    );
+      {/* Content Sections */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        {/* Cast Section */}
+        {credits && credits.cast.length > 0 && (
+          <Box sx={{ mb: 8 }}>
+            <Typography 
+              variant="h4" 
+              component="h2" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 4, 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme.palette.text.primary
+              }}
+            >
+              <Group sx={{ mr: 1.5, color: theme.palette.primary.main }} /> 
+              Elenco Principal
+            </Typography>
+            <Box sx={{ 
+              display: 'flex',
+              gap: 3,
+              overflowX: 'auto',
+              pb: 2,
+              '&::-webkit-scrollbar': {
+                height: 8,
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                borderRadius: 4,
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.4),
+                borderRadius: 4,
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.6),
+                }
+              }
+            }}>
+              {credits.cast.slice(0, 10).map((person) => (
+                <Box key={person.id} sx={{ flexShrink: 0, width: { xs: 150, sm: 180, md: 200 } }}>
+                  <PersonCard person={person} />
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+        
+        {/* Recommended Movies Section */}
+        {recommended && recommended.results.length > 0 && (
+          <Box>
+            <Typography 
+              variant="h4" 
+              component="h2" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 4, 
+                display: 'flex', 
+                alignItems: 'center',
+                color: theme.palette.text.primary
+              }}
+            >
+              <MovieIcon sx={{ mr: 1.5, color: theme.palette.primary.main }} /> 
+              Filmes Recomendados
+            </Typography>
+            <Box sx={{ 
+              display: 'flex',
+              gap: 3,
+              overflowX: 'auto',
+              pb: 2,
+              '&::-webkit-scrollbar': {
+                height: 8,
+              },
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                borderRadius: 4,
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.4),
+                borderRadius: 4,
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.6),
+                }
+              }
+            }}>
+              {recommended.results.slice(0, 10).map((recMovie) => (
+                <MovieRecommendationCard key={recMovie.id} movie={recMovie} />
+              ))}
+            </Box>
+          </Box>
+        )}
+      </Container>
+      
+      <Footer />
+    </Box>
+  );
 };
 
 export default MovieDetailPage;

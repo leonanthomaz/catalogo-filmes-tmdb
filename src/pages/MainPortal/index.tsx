@@ -6,7 +6,7 @@ import { moviesApi } from '../../services/api/movies';
 import type { Movie } from '../../types/movie';
 import Loading from '../../components/Loading';
 import Navbar from '../../components/Navbar';
-import Hero from '../../components/Hero';
+import Hero from '../../components/MovieHero';
 import MovieCarousel from '../../components/MovieCarousel';
 import Footer from '../../components/Footer';
 
