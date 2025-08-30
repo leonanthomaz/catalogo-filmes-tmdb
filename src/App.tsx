@@ -13,14 +13,11 @@ export const App = () => {
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [nowPlaying, setNowPlaying] = useState<Movie[]>([]);
   const [topRated, setTopRated] = useState<Movie[]>([]);
+  const [upcoming, setUpcoming] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
-  console.log("popularMovies", popularMovies)
-  console.log("nowPlaying", nowPlaying)
-  console.log("topRated", topRated)
 
   // Função para buscar filmes
   const fetchMovies = useCallback(async (isRefresh = false) => {
@@ -32,15 +29,17 @@ export const App = () => {
       }
       setError(null);
 
-      const [popularRes, nowPlayingRes, topRatedRes] = await Promise.all([
+      const [popularRes, nowPlayingRes, topRatedRes, upcomingRes] = await Promise.all([
         moviesApi.getPopular(),
         moviesApi.getNowPlaying(),
-        moviesApi.getTopRated()
+        moviesApi.getTopRated(),
+        moviesApi.getUpcoming()
       ]);
 
       setPopularMovies(popularRes.data.results.slice(0, 12));
       setNowPlaying(nowPlayingRes.data.results.slice(0, 12));
       setTopRated(topRatedRes.data.results.slice(0, 12));
+      setUpcoming(upcomingRes.data.results.slice(0, 12));
 
     } catch (error) {
       console.error('Error fetching movies:', error);
@@ -67,15 +66,22 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleRefresh = () => {
-    fetchMovies(true);
+  const handleMovieSelect = (movie: Movie) => {
+    // Navegar para a página de detalhes do filme
+    window.location.href = `/movie/${movie.id}`;
   };
 
   const handleCloseError = () => {
     setError(null);
   };
 
-  const featuredMovie = popularMovies[0] || nowPlaying[0] || topRated[0];
+  // Combina filmes de todas as categorias para o Hero
+  const allMovies = [...popularMovies, ...nowPlaying, ...topRated, ...upcoming];
+  
+  // Remove duplicatas (caso um filme esteja em múltiplas categorias)
+  const uniqueMovies = allMovies.filter((movie, index, self) =>
+    index === self.findIndex((m) => m.id === movie.id)
+  );
 
   if (loading) {
     return <Loading />;
@@ -83,9 +89,15 @@ export const App = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar onRefresh={handleRefresh} refreshing={refreshing} />
+      <Navbar />
       <main>
-        <Hero featuredMovie={featuredMovie} />
+        {/* Hero com carrossel de filmes */}
+        <Hero 
+          movies={uniqueMovies.slice(0, 10)}
+          onMovieSelect={handleMovieSelect}
+          isLoading={loading}
+        />
+        
         <Box sx={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #1A1A1A 50%, #0A0A0A 100%)' }}>
           <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
             {popularMovies.length > 0 && (
@@ -109,9 +121,17 @@ export const App = () => {
                 description="Os filmes com as melhores avaliações"
               />
             )}
+            {upcoming.length > 0 && (
+              <MovieCarousel 
+                title="🚀 Em Breve" 
+                movies={upcoming}
+                description="Próximos lançamentos nos cinemas"
+              />
+            )}
             {popularMovies.length === 0 && 
              nowPlaying.length === 0 && 
-             topRated.length === 0 && (
+             topRated.length === 0 && 
+             upcoming.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary' }}>
                 <Refresh sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
                 <Typography variant="h5" gutterBottom>
