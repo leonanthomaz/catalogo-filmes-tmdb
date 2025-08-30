@@ -18,8 +18,11 @@ export const App = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Função para buscar filmes
+  console.log("popularMovies", popularMovies)
+  console.log("nowPlaying", nowPlaying)
+  console.log("topRated", topRated)
 
+  // Função para buscar filmes
   const fetchMovies = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {

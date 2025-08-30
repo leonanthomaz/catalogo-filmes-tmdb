@@ -16,6 +16,8 @@ export interface MovieDetails extends Movie {
   runtime: number;
   budget: number;
   revenue: number;
+  tagline?: string;
+  original_language?: string;
   videos: {
     results: Video[];
   };
@@ -49,6 +51,7 @@ export interface Crew {
   name: string;
   job: string;
   department: string;
+  profile_path?: string;
 }
 
 export interface MoviesResponse {

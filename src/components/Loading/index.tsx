@@ -1,68 +1,90 @@
-import { Box, Typography, CircularProgress, keyframes, useTheme, useMediaQuery } from '@mui/material';
-import { SiPython, SiReact, SiDocker, SiPostgresql } from 'react-icons/si';
-import { FaFlask, FaVial } from 'react-icons/fa';
+import { Box, Typography, keyframes, useTheme, useMediaQuery } from '@mui/material';
+import { MovieCreation, Theaters, CameraRoll } from '@mui/icons-material';
+import { CgClapperBoard } from 'react-icons/cg';
 
-// Animações
-const float = keyframes`
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+// Animações para dar vida ao componente
+const rotate = keyframes`
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 `;
+
 const pulse = keyframes`
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
 `;
-
-const stacks = [SiPython, SiReact, SiDocker, SiPostgresql];
-const labItems = [FaFlask, FaVial];
 
 const Loading = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: 0, left: 0,
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.65)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 9999,
-        color: 'white',
-      }}
-    >
-      {/* Stack icons */}
-      <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
-        {stacks.map((Icon, idx) => (
-          <Box key={idx} sx={{ animation: `${pulse} ${2 + idx}s infinite`, fontSize: isMobile ? 40 : 60 }}>
-            <Icon color="#61dafb" />
-          </Box>
-        ))}
-      </Box>
+    return (
+        <Box
+            sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                backdropFilter: 'blur(8px)',
+                zIndex: 9999,
+                color: 'white',
+            }}
+        >
+            {/* Ícone principal de carregamento: bobina de filme girando */}
+            <CameraRoll 
+                sx={{
+                    fontSize: isMobile ? 80 : 120,
+                    color: '#FFD700',
+                    animation: `${rotate} 2s linear infinite`,
+                    mb: 3,
+                }}
+            />
 
-      {/* Frascos de laboratório */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        {labItems.map((Icon, idx) => (
-          <Box key={idx} sx={{ animation: `${float} ${3 + idx}s ease-in-out infinite`, fontSize: isMobile ? 30 : 50, color: '#90caf9' }}>
-            <Icon />
-          </Box>
-        ))}
-      </Box>
+            {/* Ícones de apoio animados */}
+            <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 }, mb: 3 }}>
+                <Theaters 
+                    sx={{ 
+                        fontSize: isMobile ? 40 : 60, 
+                        color: '#E0E0E0',
+                        animation: `${pulse} 2s ease-in-out infinite`,
+                    }}
+                />
+                {/* AQUI ESTÁ A CORREÇÃO: troquei ClapperBoard por CgClapperBoard */}
+                <CgClapperBoard 
+                    style={{
+                        fontSize: isMobile ? '40px' : '60px',
+                        color: '#E0E0E0',
+                        animation: `${pulse} 2.5s ease-in-out infinite`,
+                    }}
+                />
+                <MovieCreation
+                    sx={{ 
+                        fontSize: isMobile ? 40 : 60, 
+                        color: '#E0E0E0',
+                        animation: `${pulse} 3s ease-in-out infinite`,
+                    }}
+                />
+            </Box>
 
-      {/* Circular progress */}
-      <CircularProgress size={isMobile ? 60 : 80} thickness={4} color="primary" sx={{ animation: `${pulse} 2s infinite` }} />
-
-      {/* Mensagem */}
-      <Typography variant={isMobile ? "body1" : "h6"} sx={{ mt: 2, fontWeight: 500, textAlign: 'center' }}>
-        Carregando Sandbox...
-      </Typography>
-    </Box>
-  );
+            {/* Mensagem de carregamento */}
+            <Typography variant={isMobile ? "h6" : "h4"} sx={{ mt: 4, fontWeight: 700, textAlign: 'center', textShadow: '2px 2px 4px #000' }}>
+                Preparando a tela grande...
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 1, color: '#B0B0B0' }}>
+                Sua sessão está prestes a começar.
+            </Typography>
+        </Box>
+    );
 };
 
 export default Loading;

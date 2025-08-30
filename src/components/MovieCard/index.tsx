@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardMedia,
@@ -16,6 +17,8 @@ interface MovieCardProps {
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
+  const navigate = useNavigate();
+
   const imageUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : 'https://via.placeholder.com/300x450/1E1E1E/FFD700?text=No+Image';
@@ -32,9 +35,15 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
     return new Date(dateString).getFullYear().toString();
   };
 
+  const handleClick = () => {
+    navigate(`/movie/${movie.id}`);
+  };
+
   return (
     <Card 
+      onClick={handleClick} // Adicionado o evento de clique aqui
       sx={{ 
+        cursor: 'pointer', // Adiciona o cursor de ponteiro para indicar que é clicável
         width: '100%',
         height: '100%', 
         display: 'flex', 

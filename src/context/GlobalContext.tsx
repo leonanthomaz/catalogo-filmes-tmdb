@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import Loading from '../components/Loading';
 
 interface GlobalContextType {
   isLoading: boolean;
-  setLoading: (loading: boolean) => void;
+  setIsLoading: (loading: boolean) => void;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -11,12 +11,16 @@ const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
 export const GlobalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const setLoading = (loading: boolean) => {
-    setIsLoading(loading);
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimeout(() => setIsLoading(false), 1000);
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <GlobalContext.Provider value={{ isLoading, setLoading }}>
+    <GlobalContext.Provider value={{ isLoading, setIsLoading }}>
       {children}
       {isLoading && <Loading />}
     </GlobalContext.Provider>
