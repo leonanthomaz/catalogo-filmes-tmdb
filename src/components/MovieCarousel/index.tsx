@@ -26,6 +26,7 @@ import MovieCard from '../MovieCard';
 
 interface MovieCarouselProps {
   title: string;
+  description?: string;
   movies: Movie[];
   icon?: React.ReactNode;
   isLoading?: boolean;

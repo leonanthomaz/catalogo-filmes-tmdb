@@ -264,14 +264,15 @@ const MovieDetailPage: React.FC = () => {
             onClick={() => navigate(-1)}
             sx={{
               position: 'absolute',
-              top: { xs: 16, md: 32 },
-              left: { xs: 16, md: 32 },
+              top: { xs: 18, md: 24 },
+              left: { xs: 22, md: 0 },
               color: theme.palette.primary.main,
               backgroundColor: alpha(theme.palette.background.paper, 0.8),
               backdropFilter: 'blur(10px)',
               '&:hover': {
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
               },
+              zIndex: 1
             }}
           >
             <ArrowBack />
