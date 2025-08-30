@@ -170,9 +170,10 @@ const Navbar: React.FC = () => {
 
   const getNavItems = () => [
     { label: 'Início', icon: <Home />, path: '/' },
-    { label: 'Populares', icon: <Whatshot />, path: '/popular' },
-    { label: 'Em Cartaz', icon: <Theaters />, path: '/now-playing' },
-    { label: 'Melhores', icon: <Star />, path: '/top-rated' },
+    { label: 'Populares', icon: <Whatshot />, path: '/genres/popular' },
+    { label: 'Em Cartaz', icon: <Theaters />, path: '/genres/now-playing' },
+    { label: 'Melhores', icon: <Star />, path: '/genres/top-rated' },
+    { label: 'Gêneros', icon: <Theaters />, path: '/genres/genres' },
   ];
 
   return (

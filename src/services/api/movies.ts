@@ -28,5 +28,15 @@ export const moviesApi = {
     getRecommendations: (id: number) => api.get(`/movie/${id}/recommendations`),
     
     // Gêneros
-    getGenres: () => api.get('/genre/movie/list')
+    getGenres: () => api.get('/genre/movie/list'),
+
+    // Buscar filmes por gênero (simulado)
+    getByGenre: (genreId: number, page: number = 1) => 
+        api.get('/discover/movie', {
+        params: { 
+            with_genres: genreId,
+            page: page,
+            sort_by: 'popularity.desc'
+        }
+        }),
 };

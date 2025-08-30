@@ -8,18 +8,13 @@ import {
   useTheme,
   Fade,
   Chip,
-  IconButton,
   Stack,
   Skeleton
 } from '@mui/material';
 import { 
   PlayArrow, 
   Info, 
-  Star, 
-  VolumeOff, 
-  VolumeUp,
-  Pause,
-  PlayCircle
+  Star
 } from '@mui/icons-material';
 import type { Movie } from '../../types/movie';
 
@@ -31,8 +26,6 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ movies = [], onMovieSelect, isLoading = false }) => {
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const theme = useTheme();
 
@@ -44,48 +37,15 @@ const Hero: React.FC<HeroProps> = ({ movies = [], onMovieSelect, isLoading = fal
     if (movies.length <= 1) return;
 
     const interval = setInterval(() => {
-      if (isPlaying && movies.length > 0) {
-        setIsTransitioning(true);
-        setTimeout(() => {
-          setCurrentMovieIndex((prev) => (prev + 1) % movies.length);
-          setIsTransitioning(false);
-        }, 1000);
-      }
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentMovieIndex((prev) => (prev + 1) % movies.length);
+        setIsTransitioning(false);
+      }, 1000);
     }, 8000); // Troca a cada 8 segundos
 
     return () => clearInterval(interval);
-  }, [movies.length, isPlaying]);
-
-  const handleNextMovie = () => {
-    if (movies.length === 0) return;
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentMovieIndex((prev) => (prev + 1) % movies.length);
-      setIsTransitioning(false);
-    }, 500);
-  };
-
-  const handlePrevMovie = () => {
-    if (movies.length === 0) return;
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentMovieIndex((prev) => (prev - 1 + movies.length) % movies.length);
-      setIsTransitioning(false);
-    }, 500);
-  };
-
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleMovieSelect = (index: number) => {
-    if (movies.length === 0) return;
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentMovieIndex(index);
-      setIsTransitioning(false);
-    }, 500);
-  };
+  }, [movies.length]);
 
   const backgroundImage = featuredMovie?.backdrop_path
     ? `https://image.tmdb.org/t/p/w1920_and_h800_multi_faces${featuredMovie.backdrop_path}`
@@ -340,120 +300,9 @@ const Hero: React.FC<HeroProps> = ({ movies = [], onMovieSelect, isLoading = fal
                   </Button>
                 </>
               )}
-
-              {/* Controles do carrossel - só mostra se tiver filmes */}
-              {movies.length > 1 && (
-                <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                  <IconButton
-                    onClick={handlePlayPause}
-                    sx={{
-                      color: theme.palette.text.primary,
-                      backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      },
-                    }}
-                  >
-                    {isPlaying ? <Pause /> : <PlayCircle />}
-                  </IconButton>
-                  
-                  <IconButton
-                    onClick={() => setIsMuted(!isMuted)}
-                    sx={{
-                      color: theme.palette.text.primary,
-                      backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      },
-                    }}
-                  >
-                    {isMuted ? <VolumeOff /> : <VolumeUp />}
-                  </IconButton>
-                </Box>
-              )}
             </Box>
           </Box>
         </Fade>
-
-        {/* Indicadores de progresso - só mostra se tiver mais de 1 filme */}
-        {movies.length > 1 && (
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 40,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              display: 'flex',
-              gap: 1,
-              zIndex: 3,
-            }}
-          >
-            {movies.map((_, index) => (
-              <Box
-                key={index}
-                onClick={() => handleMovieSelect(index)}
-                sx={{
-                  width: 12,
-                  height: 4,
-                  borderRadius: 2,
-                  backgroundColor: index === currentMovieIndex
-                    ? theme.palette.primary.main
-                    : alpha(theme.palette.text.primary, 0.3),
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: index === currentMovieIndex
-                      ? theme.palette.primary.light
-                      : alpha(theme.palette.text.primary, 0.5),
-                  },
-                }}
-              />
-            ))}
-          </Box>
-        )}
-
-        {/* Botões de navegação - só mostra se tiver mais de 1 filme */}
-        {movies.length > 1 && (
-          <>
-            <IconButton
-              onClick={handlePrevMovie}
-              sx={{
-                position: 'absolute',
-                left: 20,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: theme.palette.text.primary,
-                backgroundColor: alpha(theme.palette.background.paper, 0.5),
-                zIndex: 3,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                },
-              }}
-            >
-              <PlayArrow sx={{ transform: 'rotate(180deg)' }} />
-            </IconButton>
-
-            <IconButton
-              onClick={handleNextMovie}
-              sx={{
-                position: 'absolute',
-                right: 20,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: theme.palette.text.primary,
-                backgroundColor: alpha(theme.palette.background.paper, 0.5),
-                zIndex: 3,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                },
-              }}
-            >
-              <PlayArrow />
-            </IconButton>
-          </>
-        )}
       </Container>
     </Box>
   );
