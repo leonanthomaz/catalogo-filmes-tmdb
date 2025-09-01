@@ -40,20 +40,10 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
     fetchEmbed();
   }, [tmdbId]);
 
-  // Loading
   if (isLoading) {
     return (
       <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: 600, 
-          width: '100%',
-          backgroundColor: alpha(theme.palette.background.paper, 0.5),
-          borderRadius: 2,
-          flexDirection: 'column'
-        }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 600, width: '100%', backgroundColor: alpha(theme.palette.background.paper, 0.5), borderRadius: 2, flexDirection: 'column' }}
       >
         <CircularProgress color="primary" />
         <Typography variant="body1" sx={{ mt: 2, color: theme.palette.text.secondary }}>
@@ -63,21 +53,10 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
     );
   }
 
-  // Erro
   if (error) {
     return (
       <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: 600, 
-          width: '100%',
-          backgroundColor: alpha(theme.palette.error.dark, 0.1),
-          borderRadius: 2,
-          p: 2,
-          textAlign: 'center'
-        }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 600, width: '100%', backgroundColor: alpha(theme.palette.error.dark, 0.1), borderRadius: 2, p: 2, textAlign: 'center' }}
       >
         <Typography variant="body1" color="error">
           {error}
@@ -86,27 +65,16 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
     );
   }
 
-  // Player
   return (
     <Box 
-      sx={{ 
-        width: '100%', 
-        height: 600, 
-        overflow: 'hidden', 
-        borderRadius: 2,
-        boxShadow: `0 8px 20px ${alpha(theme.palette.background.default, 0.5)}`
-      }}
+      sx={{ width: '100%', height: 600, overflow: 'hidden', borderRadius: 2, boxShadow: `0 8px 20px ${alpha(theme.palette.background.default, 0.5)}` }}
     >
       <iframe
         src={embedUrl as string}
         title="Movie Player"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
-        style={{
-          width: '100%',
-          height: '100%',
-          border: 'none'
-        }}
+        style={{ width: '100%', height: '100%', border: 'none' }}
       ></iframe>
     </Box>
   );
