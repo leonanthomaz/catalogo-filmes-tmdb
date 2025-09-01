@@ -27,7 +27,6 @@ import { moviesApi } from '../../services/api/movies';
 import type { Movie, Genre } from '../../types/movie';
 import Navbar from '../../components/Navbar';
 import MovieCard from '../../components/MovieCard';
-import Footer from '../../components/Footer';
 import Loading from '../../components/Loading';
 
 const MovieGenresPage: React.FC = () => {
@@ -70,7 +69,7 @@ const MovieGenresPage: React.FC = () => {
   const fetchMoviesByGenre = useCallback(async (genreId: number, page: number = 1, sort: string = 'popularity') => {
     try {
       setMoviesLoading(true);
-      const response = await moviesApi.getPopular(); // Usamos popular como base
+      const response = await moviesApi.getPopular();
       
       // Filtrar filmes pelo gênero selecionado (simulado já que a API TMDB não tem endpoint direto)
       let filteredMovies = response.data.results;
@@ -379,7 +378,6 @@ const MovieGenresPage: React.FC = () => {
         )}
       </Container>
       
-      <Footer />
     </Box>
   );
 };
