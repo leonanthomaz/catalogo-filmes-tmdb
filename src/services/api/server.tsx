@@ -5,7 +5,7 @@ import axios from "axios";
 export const serverApi = {
   getMovieEmbed: async (tmdbId: number) => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_SERVER}/movie/${tmdbId}`);
+      const res = await axios.get(`https://movie-09rz.onrender.com/movie/${tmdbId}`);
       return res.data;
     } catch (err: any) {
       console.error("Erro no serverApi.getMovieEmbed:", err);
