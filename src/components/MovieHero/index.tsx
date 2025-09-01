@@ -114,7 +114,7 @@ const Hero: React.FC<HeroProps> = ({ movies = [], onMovieSelect, isLoading = fal
                 lineHeight: 1.1
               }}
             >
-              Bem-vindo ao LeonanFilmes
+              Bem-vindo ao Movie
             </Typography>
             
             <Typography

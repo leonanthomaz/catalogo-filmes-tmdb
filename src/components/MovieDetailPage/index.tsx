@@ -13,7 +13,8 @@ import {
   CardContent,
   alpha,
   useTheme,
-  Skeleton
+  Skeleton,
+  Modal
 } from '@mui/material';
 import {
   Star,
@@ -24,7 +25,8 @@ import {
   Movie as MovieIcon,
   ArrowBack,
   PlayArrow,
-  Theaters
+  Theaters,
+  Close
 } from '@mui/icons-material';
 import { moviesApi } from '../../services/api/movies';
 import type { Movie, MovieDetails, Cast, Crew } from '../../types/movie';
@@ -32,7 +34,7 @@ import { useGlobal } from '../../context/GlobalContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 // import MovieTorrentDownload from '../MovieTorrentDownload';
-import { serverApi } from '../../services/api/server';
+import MovieVideo from '../MovieVideo'; // Importando o componente modal
 
 interface RecommendedMovies {
   results: Movie[];
@@ -47,23 +49,7 @@ const MovieDetailPage: React.FC = () => {
   const [recommended, setRecommended] = useState<RecommendedMovies | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isLoading, setIsLoading } = useGlobal();
-  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchEmbed = async () => {
-      if (!movie) return;
-      try {
-        const data = await serverApi.getMovieEmbed(movie.id);
-        if (data.status === "ok" && data.player_url) {
-          setEmbedUrl(data.player_url);
-        }
-      } catch (err) {
-        console.error("Erro ao pegar embed:", err);
-      }
-    };
-    fetchEmbed();
-  }, [movie]);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchMovieData = useCallback(async (movieId: string | number) => {
     if (!movieId) return;
@@ -94,6 +80,14 @@ const MovieDetailPage: React.FC = () => {
 
   const handleCardClick = (movieId: number) => {
     navigate(`/movie/${movieId}`);
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   if (error) {
@@ -333,6 +327,7 @@ const MovieDetailPage: React.FC = () => {
               />
               <Box
                 className="play-overlay"
+                onClick={handleOpenModal}
                 sx={{
                   position: 'absolute',
                   top: 0,
@@ -440,11 +435,7 @@ const MovieDetailPage: React.FC = () => {
               
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 <Button
-                  component="a"
-                  href={embedUrl || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  disabled={!embedUrl}
+                  onClick={handleOpenModal}
                   variant="contained"
                   startIcon={<Theaters />}
                   sx={{
@@ -564,6 +555,51 @@ const MovieDetailPage: React.FC = () => {
           </Box>
         )}
       </Container>
+      
+      {/* Modal para assistir o filme */}
+      <Modal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="movie-video-modal"
+        aria-describedby="modal-to-watch-movie"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: 900,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: 24,
+            overflow: 'hidden',
+          }}
+        >
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: 'text.primary',
+              zIndex: 10,
+              backgroundColor: 'background.paper',
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+          >
+            <Close />
+          </IconButton>
+          <MovieVideo tmdbId={movie.id} />
+        </Box>
+      </Modal>
       
       <Footer />
     </Box>

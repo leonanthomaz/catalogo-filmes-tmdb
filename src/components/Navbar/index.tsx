@@ -273,7 +273,7 @@ const Navbar: React.FC = () => {
                   fontSize: { sm: '1.8rem', md: '2rem' }
                 }}
               >
-                LeonanFilmes
+                Movie
               </Typography>
             </Box>
           </Box>

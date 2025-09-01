@@ -122,10 +122,10 @@ const MovieGenresPage: React.FC = () => {
     
     if (genre) {
       navigate(`/genres/${genre.id}`);
-      document.title = `${genre.name} - LeonanFilmes`;
+      document.title = `${genre.name} - Movie`;
     } else {
       navigate('/genres');
-      document.title = 'Todos os Gêneros - LeonanFilmes';
+      document.title = 'Todos os Gêneros - Movie';
     }
   };
 

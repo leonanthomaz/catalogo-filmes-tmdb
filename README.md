@@ -1,6 +1,6 @@
-# Projeto LeonanFilmes - Catálogo de Filmes TMDB
+# Projeto Movie - Catálogo de Filmes TMDB
 ## Descrição
-O **LeonanFilmes** é um portal de catálogo de filmes que consome a API gratuita do **TMDB (The Movie Database)**.  
+O **Movie** é um portal de catálogo de filmes que consome a API gratuita do **TMDB (The Movie Database)**.  
 O projeto foi desenvolvido para prática e demonstração de integração com APIs externas, interface moderna com **Material UI** e uso de **React** no frontend.  
 A aplicação exibe filmes populares, permite pesquisa por título e mostra detalhes básicos de cada filme.
 

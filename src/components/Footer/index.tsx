@@ -57,7 +57,7 @@ const Footer = () => {
           >
             {/* Informações de copyright */}
             <Stack spacing={2} alignItems={{ xs: 'center', md: 'flex-start' }} sx={{ maxWidth: 400 }}>
-              LeonanFilmes
+              Movie
               <Typography variant="body2" sx={{ opacity: 0.8, textAlign: { xs: 'center', md: 'left' } }}>
                 Catálogo de filmes TMDB. 
               </Typography>
