@@ -33,6 +33,8 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import MovieTorrentDownload from '../MovieTorrentDownload';
 
+import Modal from '@mui/material/Modal'; // Importe o Modal
+import MovieVideo from '../MovieVideo';
 interface RecommendedMovies {
   results: Movie[];
 }
@@ -46,6 +48,10 @@ const MovieDetailPage: React.FC = () => {
   const [recommended, setRecommended] = useState<RecommendedMovies | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isLoading, setIsLoading } = useGlobal();
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleOpenModal = () => setOpenModal(true); // Função para abrir
+  const handleCloseModal = () => setOpenModal(false); // Função para fechar
 
   const fetchMovieData = useCallback(async (movieId: string | number) => {
     if (!movieId) return;
@@ -424,6 +430,7 @@ const MovieDetailPage: React.FC = () => {
                 <Button
                   variant="contained"
                   startIcon={<Theaters />}
+                  onClick={handleOpenModal}
                   sx={{
                     py: 1.5,
                     px: 3,
@@ -438,7 +445,7 @@ const MovieDetailPage: React.FC = () => {
                     }
                   }}
                 >
-                  Assistir Trailer
+                  Assistir Filme
                 </Button>
                 
                 <MovieTorrentDownload movieTitle={movie.title} />
@@ -540,6 +547,35 @@ const MovieDetailPage: React.FC = () => {
           </Box>
         )}
       </Container>
+
+      {/* Modal para o player de vídeo */}
+      <Modal
+        open={openModal}
+        onClose={handleCloseModal}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2,
+        }}
+      >
+        <Box sx={{ 
+          width: '90%', 
+          maxWidth: 1200, 
+          p: 2, 
+          backgroundColor: theme.palette.background.paper, 
+          borderRadius: 2, 
+          outline: 'none' 
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <IconButton onClick={handleCloseModal} sx={{ color: theme.palette.text.primary }}>
+              {/* Ícone de fechar, por exemplo: */}
+              <Theaters />
+            </IconButton>
+          </Box>
+          <MovieVideo tmdbId={movie.id} />
+        </Box>
+      </Modal>
       
       <Footer />
     </Box>
