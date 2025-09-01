@@ -20,7 +20,9 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
       setEmbedUrl(null);
 
       try {
+        console.log(`Buscando embed para TMDB ID: ${tmdbId}`);
         const data = await serverApi.getMovieEmbed(tmdbId);
+        console.log('Resposta da API:', data);
 
         if (data.status === 'ok' && data.player_url) {
           setEmbedUrl(data.player_url);
@@ -37,7 +39,12 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
       }
     };
 
-    fetchEmbed();
+    if (tmdbId) {
+      fetchEmbed();
+    } else {
+      setError("ID do filme não fornecido");
+      setIsLoading(false);
+    }
   }, [tmdbId]);
 
   if (isLoading) {
@@ -61,6 +68,9 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
         <Typography variant="body1" color="error">
           {error}
         </Typography>
+        <Typography variant="body2" sx={{ mt: 1, color: theme.palette.text.secondary }}>
+          TMDB ID: {tmdbId}
+        </Typography>
       </Box>
     );
   }
@@ -75,6 +85,10 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         style={{ width: '100%', height: '100%', border: 'none' }}
+        onError={(e) => {
+          console.error("Erro no iframe:", e);
+          setError("Erro ao carregar o player. O vídeo pode não estar disponível.");
+        }}
       ></iframe>
     </Box>
   );
