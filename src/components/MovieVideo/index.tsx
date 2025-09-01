@@ -14,16 +14,20 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
   const theme = useTheme();
 
   useEffect(() => {
-    async function fetchEmbed() {
+    const fetchEmbed = async () => {
       setIsLoading(true);
       setError(null);
+      setEmbedUrl(null);
+
       try {
         const data = await serverApi.getMovieEmbed(tmdbId);
 
         if (data.status === 'ok' && data.player_url) {
           setEmbedUrl(data.player_url);
+        } else if (data.status === 'error') {
+          setError(data.message || 'Não foi possível encontrar um vídeo para este filme.');
         } else {
-          setError('Não foi possível encontrar um vídeo para este filme.');
+          setError('Resposta inesperada do servidor.');
         }
       } catch (err: any) {
         console.error("Erro ao buscar vídeo:", err);
@@ -31,11 +35,12 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
       } finally {
         setIsLoading(false);
       }
-    }
+    };
 
     fetchEmbed();
   }, [tmdbId]);
 
+  // Loading
   if (isLoading) {
     return (
       <Box 
@@ -46,17 +51,19 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
           height: 600, 
           width: '100%',
           backgroundColor: alpha(theme.palette.background.paper, 0.5),
-          borderRadius: 2
+          borderRadius: 2,
+          flexDirection: 'column'
         }}
       >
         <CircularProgress color="primary" />
-        <Typography variant="body1" sx={{ ml: 2, color: theme.palette.text.secondary }}>
+        <Typography variant="body1" sx={{ mt: 2, color: theme.palette.text.secondary }}>
           Carregando vídeo...
         </Typography>
       </Box>
     );
   }
 
+  // Erro
   if (error) {
     return (
       <Box 
@@ -67,7 +74,9 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
           height: 600, 
           width: '100%',
           backgroundColor: alpha(theme.palette.error.dark, 0.1),
-          borderRadius: 2
+          borderRadius: 2,
+          p: 2,
+          textAlign: 'center'
         }}
       >
         <Typography variant="body1" color="error">
@@ -77,6 +86,7 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
     );
   }
 
+  // Player
   return (
     <Box 
       sx={{ 
