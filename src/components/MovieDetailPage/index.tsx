@@ -34,7 +34,8 @@ import Footer from '../../components/Footer';
 import MovieTorrentDownload from '../MovieTorrentDownload';
 
 import Modal from '@mui/material/Modal'; // Importe o Modal
-import MovieVideo from '../MovieVideo';
+import MovieVideo from '../MovieVideo/index';
+
 interface RecommendedMovies {
   results: Movie[];
 }
