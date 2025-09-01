@@ -310,7 +310,7 @@ const Navbar: React.FC = () => {
           <Box
             sx={{
               position: 'relative',
-              width: { xs: '100%', sm: '400px', md: '500px' },
+              width: { xs: '60%', sm: '200px', md: '400px' },
               flexShrink: 0,
             }}
             ref={searchRef}
@@ -432,7 +432,7 @@ const Navbar: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <MovieIcon sx={{ mr: 1, color: 'primary.main' }} />
             <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
-              LeonanFilmes
+              LT
             </Typography>
           </Box>
           <Divider sx={{ my: 2 }} />
