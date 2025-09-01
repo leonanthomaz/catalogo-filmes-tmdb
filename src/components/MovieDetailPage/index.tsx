@@ -32,9 +32,7 @@ import { useGlobal } from '../../context/GlobalContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 // import MovieTorrentDownload from '../MovieTorrentDownload';
-
-import Modal from '@mui/material/Modal'; // Importe o Modal
-import MovieVideo from '../MovieVideo/index';
+import { serverApi } from '../../services/api/server';
 
 interface RecommendedMovies {
   results: Movie[];
@@ -49,10 +47,23 @@ const MovieDetailPage: React.FC = () => {
   const [recommended, setRecommended] = useState<RecommendedMovies | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isLoading, setIsLoading } = useGlobal();
-  const [openModal, setOpenModal] = useState(false);
+  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
 
-  const handleOpenModal = () => setOpenModal(true); // Função para abrir
-  const handleCloseModal = () => setOpenModal(false); // Função para fechar
+  useEffect(() => {
+    const fetchEmbed = async () => {
+      if (!movie) return;
+      try {
+        const data = await serverApi.getMovieEmbed(movie.id);
+        if (data.status === "ok" && data.player_url) {
+          setEmbedUrl(data.player_url);
+        }
+      } catch (err) {
+        console.error("Erro ao pegar embed:", err);
+      }
+    };
+    fetchEmbed();
+  }, [movie]);
+
 
   const fetchMovieData = useCallback(async (movieId: string | number) => {
     if (!movieId) return;
@@ -429,9 +440,13 @@ const MovieDetailPage: React.FC = () => {
               
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 <Button
+                  component="a"
+                  href={embedUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  disabled={!embedUrl}
                   variant="contained"
                   startIcon={<Theaters />}
-                  onClick={handleOpenModal}
                   sx={{
                     py: 1.5,
                     px: 3,
@@ -448,6 +463,7 @@ const MovieDetailPage: React.FC = () => {
                 >
                   Assistir Filme
                 </Button>
+
                 
                 {/* <MovieTorrentDownload movieTitle={movie.title} /> */}
               </Stack>
@@ -548,35 +564,6 @@ const MovieDetailPage: React.FC = () => {
           </Box>
         )}
       </Container>
-
-      {/* Modal para o player de vídeo */}
-      <Modal
-        open={openModal}
-        onClose={handleCloseModal}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 2,
-        }}
-      >
-        <Box sx={{ 
-          width: '90%', 
-          maxWidth: 1200, 
-          p: 2, 
-          backgroundColor: theme.palette.background.paper, 
-          borderRadius: 2, 
-          outline: 'none' 
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <IconButton onClick={handleCloseModal} sx={{ color: theme.palette.text.primary }}>
-              {/* Ícone de fechar, por exemplo: */}
-              <Theaters />
-            </IconButton>
-          </Box>
-          <MovieVideo tmdbId={movie.id} />
-        </Box>
-      </Modal>
       
       <Footer />
     </Box>

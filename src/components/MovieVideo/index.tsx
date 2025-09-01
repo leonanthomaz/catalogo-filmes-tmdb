@@ -112,13 +112,9 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
         boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.12)}`,
       }}
     >
-    <iframe
-      src={embedUrl}
-      title="Movie Player"
-      allow="autoplay"
-      style={{ width: "100%", height: "100%", border: "none" }}
-    />
-
+    <a href={embedUrl} target="_blank" rel="noopener noreferrer">
+      Assistir ao vídeo
+    </a>
     </Box>
   );
 };
