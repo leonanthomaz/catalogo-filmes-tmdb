@@ -80,16 +80,12 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
       sx={{ width: '100%', height: 600, overflow: 'hidden', borderRadius: 2, boxShadow: `0 8px 20px ${alpha(theme.palette.background.default, 0.5)}` }}
     >
       <iframe
-        src={`https://movie-09rz.onrender.com/movie/${tmdbId}`}
+        src={embedUrl!}
         title="Movie Player"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         style={{ width: '100%', height: '100%', border: 'none' }}
-        onError={(e) => {
-          console.error("Erro no iframe:", e);
-          setError("Erro ao carregar o player. O vídeo pode não estar disponível.");
-        }}
-      ></iframe>
+        />
     </Box>
   );
 };
