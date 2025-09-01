@@ -79,13 +79,15 @@ const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
     <Box 
       sx={{ width: '100%', height: 600, overflow: 'hidden', borderRadius: 2, boxShadow: `0 8px 20px ${alpha(theme.palette.background.default, 0.5)}` }}
     >
-      <iframe
-        src={embedUrl!}
-        title="Movie Player"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        style={{ width: '100%', height: '100%', border: 'none' }}
+      {embedUrl && (
+        <iframe
+          src={embedUrl}
+          title="Movie Player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{ width: '100%', height: '100%', border: 'none' }}
         />
+      )}
     </Box>
   );
 };
