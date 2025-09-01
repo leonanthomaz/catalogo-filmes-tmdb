@@ -31,7 +31,7 @@ import type { Movie, MovieDetails, Cast, Crew } from '../../types/movie';
 import { useGlobal } from '../../context/GlobalContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import MovieTorrentDownload from '../MovieTorrentDownload';
+// import MovieTorrentDownload from '../MovieTorrentDownload';
 
 import Modal from '@mui/material/Modal'; // Importe o Modal
 import MovieVideo from '../MovieVideo/index';
@@ -449,7 +449,7 @@ const MovieDetailPage: React.FC = () => {
                   Assistir Filme
                 </Button>
                 
-                <MovieTorrentDownload movieTitle={movie.title} />
+                {/* <MovieTorrentDownload movieTitle={movie.title} /> */}
               </Stack>
             </Box>
           </Box>
