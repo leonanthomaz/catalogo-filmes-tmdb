@@ -1,8 +1,7 @@
 // src/components/MovieVideo/index.tsx
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import { serverApi } from '../../services/api/server';
-import { useGlobal } from '../../context/GlobalContext';
 
 interface MovieVideoProps {
   tmdbId: number;
@@ -10,64 +9,77 @@ interface MovieVideoProps {
 
 const MovieVideo: React.FC<MovieVideoProps> = ({ tmdbId }) => {
   const [playerUrl, setPlayerUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { setIsLoading } = useGlobal();
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchPlayerUrl = async () => {
-      if (!tmdbId) return;
-      setIsLoading(true);
-      setError(null);
-      setPlayerUrl(null);
       try {
+        setLoading(true);
+        setError(null);
+        
+        // Chama sua API para obter a URL do player
         const response = await serverApi.getMovieEmbed(tmdbId);
+        
         if (response.data.status === 'ok' && response.data.player_url) {
           setPlayerUrl(response.data.player_url);
         } else {
-          setError(response.data.message || 'Player não encontrado.');
+          setError('Player não disponível para este filme');
         }
       } catch (err) {
-        console.error("Erro ao carregar URL do player:", err);
-        setError('Não foi possível carregar o player de vídeo.');
+        console.error('Erro ao buscar URL do player:', err);
+        setError('Erro ao carregar o player');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchPlayerUrl();
-  }, [tmdbId, setIsLoading]);
+  }, [tmdbId]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   if (error) {
     return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <Typography variant="h6" color="error">{error}</Typography>
+      <Box sx={{ textAlign: 'center', p: 4, minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
       </Box>
     );
   }
 
   if (!playerUrl) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <CircularProgress />
+      <Box sx={{ textAlign: 'center', p: 4, minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography variant="h6">
+          Player não disponível
+        </Typography>
       </Box>
     );
   }
-  
+
   return (
-    <Box sx={{ position: 'relative', pt: '56.25%', width: '100%' }}>
+    <Box sx={{ width: '100%', height: '70vh', maxHeight: '600px' }}>
       <iframe
         src={playerUrl}
-        title="Player de Vídeo"
-        allowFullScreen
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
           width: '100%',
           height: '100%',
           border: 'none',
-          borderRadius: '8px'
+          borderRadius: '8px',
+          backgroundColor: theme.palette.background.default
         }}
+        allowFullScreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        title={`Player for TMDB ID: ${tmdbId}`}
       />
     </Box>
   );
